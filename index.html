@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Você</title>
+    
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* --- CORES DO SITE --- */
+        :root {
+            --vermelho-principal: #d00000;
+            --preto: #111111;
+            --branco: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding-bottom: 110px;
+            color: var(--preto);
+            overflow-x: hidden;
+            min-height: 100vh;
+            
+            /* Imagem de Fundo Padrão */
+            background-image: url('image17.png'); 
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            transition: background-image 0.6s ease-in-out;
+        }
+
+        /* --- TELA DE INTRODUÇÃO --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--branco);
+            text-align: center;
+            background: url('fundo-intro.jpg') no-repeat center center;
+            background-size: cover;
+        }
+
+        .intro-content {
+            width: 90%;
+            max-width: 600px;
+            background-color: #111111;
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--vermelho-principal);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        }
+
+        .intro-content h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .intro-msg { font-size: 1.2rem; min-height: 30px; color: #ffcece; font-weight: bold; margin-top: 15px; }
+        
+        .botoes-intro { display: flex; justify-content: center; gap: 30px; margin-top: 30px; }
+
+        .btn-decisao {
+            padding: 15px 40px; font-size: 1.2rem; border: none; border-radius: 50px;
+            cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: bold;
+            transition: transform 0.2s; z-index: 10;
+        }
+
+        .btn-sim { background-color: var(--vermelho-principal); color: var(--branco); }
+        .btn-sim:hover { transform: scale(1.05); }
+        .btn-nao { background-color: var(--branco); color: var(--preto); font-weight: 900; }
+
+        /* --- HEADER E CONTEÚDO --- */
+        header {
+            text-align: center; padding: 40px 20px; background: rgba(255, 255, 255, 0.95);
+            border-radius: 0 0 30px 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); margin-bottom: 30px;
+        }
+        header h1 { color: var(--vermelho-principal); margin: 0; text-transform: uppercase; font-weight: 700; }
+
+        .conteudo-principal { max-width: 800px; margin: 20px auto; padding: 0 20px; opacity: 0; transition: opacity 1s; }
+
+        .tab-content {
+            display: none; animation: slideUp 0.6s ease; background: rgba(255, 255, 255, 0.98);
+            padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center; margin-bottom: 40px; border-top: 5px solid var(--vermelho-principal);
+        }
+        .tab-content h2 { color: var(--preto); margin-bottom: 15px; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ESTILO DOS VIDEOS --- */
+        .video-container { margin: 30px 0; text-align: center; }
+        video { width: 100%; border-radius: 15px; background: #000; }
+        
+        .subtitulo-video {
+            font-size: 0.9rem; color: #555; margin-bottom: 10px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* --- GALERIA DE FOTOS --- */
+        .galeria-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .foto-card {
+            background: white; padding: 10px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 150px; transition: transform 0.3s ease; cursor: pointer;
+        }
+        .foto-card:hover { transform: scale(1.1); z-index: 5; }
+        .foto-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid #ddd; }
+        .foto-legenda { margin-top: 8px; font-size: 0.85rem; font-weight: 600; color: #444; }
+
+        /* --- LIGHTBOX (VISUALIZADOR TELA CHEIA) --- */
+        .lightbox-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.95); z-index: 10001;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .lightbox-content { max-width: 95%; max-height: 85vh; border: 2px solid #333; border-radius: 10px; }
+        
+        /* Botão X para fechar */
+        .fechar-btn {
+            position: absolute; top: 20px; right: 25px;
+            color: #fff; background: var(--vermelho-principal);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            transition: 0.3s; z-index: 10002;
+        }
+        .fechar-btn:hover { transform: rotate(90deg); background: #ff4d4d; }
+        
+        #lightbox-caption { color: white; margin-top: 15px; font-size: 1.2rem; font-weight: bold; }
+
+        /* --- BARRA DE NAVEGAÇÃO --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 95%; max-width: 500px; /* Reduzi um pouco pois tem menos botões */
+            background: #111111;
+            display: none; opacity: 0; /* Começa invisível */
+            justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-radius: 50px; z-index: 1000; overflow-x: auto;
+            transition: opacity 1.5s ease;
+        }
+        .nav-item {
+            border: none; background: none; color: #777; font-size: 1.2rem;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            padding: 10px; border-radius: 30px; transition: all 0.3s ease; flex-shrink: 0;
+        }
+        .nav-item span { max-width: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; font-size: 0.75rem; }
+        .nav-item:hover, .nav-item.active { background-color: var(--branco); color: var(--vermelho-principal); }
+        .nav-item:hover span, .nav-item.active span { max-width: 80px; opacity: 1; margin-right: 5px; }
+        
+    </style>
+</head>
+<body>
+
+    <!-- LIGHTBOX PARA FOTOS -->
+    <div id="lightbox" class="lightbox-overlay">
+        <div class="fechar-btn" onclick="fecharLightbox()"><i class="fas fa-times"></i></div>
+        <img id="lightbox-img" class="lightbox-content" src="">
+        <p id="lightbox-caption"></p>
+    </div>
+
+    <!-- TELA DE INTRODUÇÃO -->
+    <div id="intro-screen">
+        <div class="intro-content">
+            <h1>Seja bem vindo a minha humilde criação! 🎉</h1>
+            <p>Tentei preparar uma surpresa para ti.</p>
+            <p>Quer ver?</p>
+            <div class="botoes-intro">
+                <button class="btn-decisao btn-sim" onclick="entrarNoSite()">SIM</button>
+                <button class="btn-decisao btn-nao" id="btnNao" onmouseover="desviaBotao()">NÃO</button>
+            </div>
+            <p class="intro-msg" id="msgPersistencia"></p>
+        </div>
+    </div>
+
+    <header>
+        <h1>Feliz Aniversário!</h1>
+    </header>
+
+    <div class="conteudo-principal" id="mainContent">
+        
+        <!-- ABA INÍCIO -->
+        <div id="Inicio" class="tab-content" style="display: block;">
+            <h2>Bem-vindo!✨</h2>
+            <p>Dê uma olhada em todas as opções.</p>
+            <hr style="margin: 30px 0; border-color: #eee;">
+            <div class="video-container">
+                <p class="subtitulo-video">Veja o vídeo depois de ver todas as abas</p>
+                <!-- Vídeo principal da home -->
+                <video controls controlsList="nodownload">
+                    <source src="lv_0_20251127001323.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <!-- ABA CARTA -->
+        <div id="Carta" class="tab-content">
+            <h2>Meus Parabéns para ti</h2>
+            <i class="fas fa-envelope-open-text" style="font-size: 3rem; margin-bottom: 20px;"></i>
+            <p align="justify">Happy birthday to you, Andrews (sim, eu lembro seu nome, só não falo pq tenho medo de pronunciar errado)! 
+Provavelmente você odeia textos grandes, então vou tentar ser mais direta ao ponto, só faz um esforcinho pra ler tudo por favor, deu trabalho isso aqui, minha criatividade tá ruim (já peço desculpas se eu falar coisa desnecessária).
+Eu resolvi escrever essa carta virtual porque eu sempre me expressei melhor escrevendo do que falando, ainda mais em uma data tão especial que estamos vivenciando agora que eu preciso falar bem. 
+Em primeiro lugar, tirando a brincadeira de cima, feliz aniversário criaturinha, eu te desejo tudo de bom, dinheiro, saúde, felicidade e carinho, coisas boas em geral (se eu for falar uma por uma ai isso aqui fica gigante), eu estou na torcida para que todas as suas metas e sonhos sejam batidas algum dia, você é uma pessoa incrível e maravilhosa, e nesses 8 meses de amizade só me impressiona mais ainda o quão incrível você é (vou puxar seu saco hoje sim), eu vejo em você o cara que tem o potencial de alcançar a lua só estendendo a mão, sinto que é capaz de tudo de bom, então aproveita seu dia, se puder, faz algo diferente, se diverte, curte seu momento porque hoje marca o seu dia, o dia que você pisou na terra (não literalmente claro) e disse pro mundo “eu to na área!” (pensando melhor essa cena é bem engraçada), quando precisar, se eu conseguir ajudar, eu vou estar por aqui, sei que piso muito na bola contigo na maioria das vezes, mas estou sempre aqui, belezinha? Novamente, Feliz Aniversário aniversariante. </p>
+        </div>
+
+        <!-- ABA NOSTALGIA -->
+        <div id="Nostalgia" class="tab-content">
+            <h2>Momentosinhos 🎞</h2>
+            <p>Clique na foto para ampliar</p>
+            <div class="galeria-container">
+                <div class="foto-card" onclick="abrirLightbox('image6.png','.')">
+                    <img src="image6.png" alt="Foto 1"> 
+                    <div class="foto-legenda">A primeira árvore personalizada que você me ensinou a fazer</div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('image5.png','.')">
+                    <img src="image5.png" alt="Foto 2">
+                    <div class="foto-legenda">O dia que eu comecei a planejar seu presente -vista linda afinal- </div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('image14.png','.')">
+                    <img src="image14.png" alt="Foto 2">
+                    <div class="foto-legenda">A vista do dia que seu dirigivel ficou pronto</div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('image18.png','.')">
+                    <img src="image18.png" alt="Foto 2">
+                    <div class="foto-legenda">A fabrica de mel que quebramos a cabeça juntos</div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('image19.png','.')">
+                    <img src="image19.png" alt="Foto 2">
+                    <div class="foto-legenda">Essa você deve saber porque tá aqui, pra lembrança do dia que eu mais te fiz me esperar nesse joguinho</div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('imagem.png','.')">
+                    <img src="imagem.png" alt="Foto 2">
+                    <div class="foto-legenda">Tirei quando vc tava distraido, ficou como um chodó pra mim, olho quando sinto saudades</div>
+                </div>
+                <div class="foto-card" onclick="abrirLightbox('imagem1.png','.')">
+                    <img src="imagem1.png" alt="Foto 2">
+                    <div class="foto-legenda">Esse print mal tirado da minha tela do dc era mais pra representar o quanto eu gosto de passar meu tempo contigo, cada segundo que passa é valioso pra mim de +</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA NÓS -->
+        <div id="NosDois" class="tab-content">
+            <h2>Uma cartinha mais pessoal</h2>
+            <p>Bom, eu quis aproveitar para escrever algo que simbolize a gente também, já que nunca fiz nada de dedicatória ou algo do tipo pra você (e eu amo fazer isso), aí quis colocar uma cartinha mais pegada nisso também. Como sempre digo e quero reforçar aqui, nesse tempo todinho que a gente passou como amigos (para mim te considero como melhor amigo), eu não me arrependo de um mísero segundo ao seu lado, de verdade, você me ajudou em momentos difíceis, me tirou do buraco, me fez sorrir, me fez bem a cada dia que passou, minha admiração só aumentou e aumentou e aumentou, eu sou muito agradecida por tudinho, sua paciência, compreensão, honestidade e vontade de estar ao meu lado também. Sei que tivemos uns desentendimentos durante esse tempo, tanto da minha parte como da sua, mas hoje é um dia feliz, as coisas ruins acontecem mais as boas são melhores. Eu quero pedir desculpas pelas minhas mancadas e se não for pedir de mais, um pouco mais de paciencia comigo, eu sempre quis parecer perfeita para você, uma menina que pode contar pra tudo, que te faça rir e se divertir quando está triste ou de cabeça quente, retribuir o que você fez e faz por mim, “a nana mais eu n fiz nada de mais”, pra mim você fez e muito, mas tentando não fugir do assunto, eu percebi que isso era só invenção da minha cabeça, porque você nunca me cobrou nada alem do basico, você sempre foi compreensivo e quando eu errava você ria comigo invez de me julgar, percebi que não preciso ser perfeita, apenas ser eu mesma contigo, eu quero me tornar alguem melhor por mim e para nossa amizade, não só quero como vou, porque só de pensar em te perder, meu coração não para de bater de medo disso acontecer, então obrigada por tudo, e pelo que vem pela frente, vamos caminhar juntos se tudo der certo e se você quiser minha companhia na sua caminhada, assim como eu quero a sua ao meu lado, y love you thu thu, vou torcer pela sua felicidade por todos os dias que eu ainda respirar.
+</p>
+        </div>
+
+    </div>
+
+    <!-- Navegação sem a aba Wallpaper -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="abrirAba('Inicio', this)"><i class="fas fa-home"></i> <span>Início</span></button>
+        <button class="nav-item" onclick="abrirAba('Carta', this)"><i class="fas fa-envelope"></i> <span>Carta</span></button>
+        <button class="nav-item" onclick="abrirAba('Nostalgia', this)"><i class="fas fa-images"></i> <span>Fotos</span></button>
+        <button class="nav-item" onclick="abrirAba('NosDois', this)"><i class="fas fa-heart"></i> <span>Nós</span></button>
+    </nav>
+
+    <script>
+        const imagensDeFundo = {
+            'Inicio': 'image12.png',
+            'Carta': 'image12.png',
+            'Nostalgia': 'image12.png',
+            'NosDois': 'image12.png'
+        };
+
+        // --- Botão Não Fujão ---
+        let tentativas = 0;
+        function desviaBotao() {
+            const btn = document.getElementById('btnNao');
+            const msg = document.getElementById('msgPersistencia');
+            btn.style.zIndex = "10000"; 
+            
+            tentativas++;
+            if (tentativas === 3) msg.innerText = "Pelo menos veja, por favor 🥺";
+            if (tentativas > 5) { btn.style.display = 'none'; return; }
+            
+            btn.style.position = 'fixed'; 
+            
+            const maxLeft = window.innerWidth - btn.offsetWidth - 20;
+            const maxTop = window.innerHeight - btn.offsetHeight - 20;
+            const novaX = Math.max(20, Math.random() * maxLeft);
+            const novaY = Math.max(20, Math.random() * maxTop);
+            
+            btn.style.left = novaX + 'px';
+            btn.style.top = novaY + 'px';
+        }
+
+        // --- Entrada no Site ---
+        function entrarNoSite() {
+            const intro = document.getElementById('intro-screen');
+            const mainContent = document.getElementById('mainContent');
+            const navBar = document.querySelector('.bottom-nav');
+
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                mainContent.style.opacity = '1';
+                navBar.style.display = 'flex'; 
+                setTimeout(() => { navBar.style.opacity = '1'; }, 50);
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#d00000', '#000000', '#ffffff'] });
+            }, 500);
+        }
+
+        // --- Abas ---
+        function abrirAba(nomeAba, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(nomeAba).style.display = 'block';
+            btnElement.classList.add('active');
+
+            const novaImagem = imagensDeFundo[nomeAba];
+            if (novaImagem) {
+                document.body.style.backgroundImage = `url('${novaImagem}')`;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Pausa qualquer vídeo ao mudar de aba
+            document.querySelectorAll('video').forEach(vid => vid.pause());
+        }
+
+        // --- Lightbox Fotos ---
+        function abrirLightbox(caminhoImagem, legenda) {
+            const lightbox = document.getElementById('lightbox');
+            document.getElementById('lightbox-img').src = caminhoImagem;     
+            document.getElementById('lightbox-caption').innerText = legenda; 
+            lightbox.style.display = 'flex'; 
+        }
+        function fecharLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
